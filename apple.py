@@ -53,8 +53,6 @@ from create_elements import string, ball
 from __init__ import screen, font, clock
 
 
-
-
 def draw_bar(screen, hunger_value, bar_type:str, x, y):
   if bar_type == "hunger":
       bar_colour = red
@@ -97,6 +95,7 @@ pygame.time.set_timer(everyFourthOfASec, 300)
 
 background_image = pygame.image.load("images/bg.jpg").convert()
 menuButton = pygame.image.load("images/Buttons/menuButton.png").convert_alpha()
+menuButtonRect = menuButton.get_rect(topleft=(windowWidth - 70, 20))
 
 background_image = pygame.transform.scale(background_image, (windowWidth, windowHeight))
 menuButton = pygame.transform.scale(menuButton, (50, 50))
@@ -191,6 +190,7 @@ class UserInterface:
         self.playingHeight = 0
         self.verticalDirection = 1
         self.ballFalling = False
+        self.ballInteractable = True
 
 
 
@@ -273,16 +273,41 @@ class UserInterface:
 
     def playActivity(self):
         if self.playing:
-            screen.blit(string, (450, self.ballHeight + self.playingHeight - 400))
+            if self.ballInteractable:
+                screen.blit(string, (450, self.ballHeight + self.playingHeight - 400))
+            ball_rect = pygame.Rect(430, self.ballHeight + self.playingHeight, ball.get_width(), ball.get_height())
             screen.blit(ball, (430, self.ballHeight + self.playingHeight))
             self.playingHeight += self.verticalDirection
-            if self.playingHeight > 100:
-                self.verticalDirection = -1
-                self.playingHeight = 0
-            if self.playingHeight < 0:
-                self.verticalDirection = 1
-                self.playingHeight = 0
+            if self.ballInteractable:
+                if self.ballFalling:
+                    self.verticalDirection = -1
+                elif not self.ballFalling:
+                    self.verticalDirection = 1
                 
+                if self.playingHeight == -50:
+                    self.ballFalling = False
+                elif self.playingHeight == 80:
+                    self.ballFalling = True
+
+           
+            
+        
+            if ball_rect.collidepoint(pygame.mouse.get_pos()):  # Check if the mouse click occurred within the ball's area
+                if pygame.mouse.get_pressed()[0]:
+                    for i in range(50):
+                        self.verticalDirection =  5
+                        self.ballInteractable = False
+                        print(self.playingHeight)
+            
+            if self.playingHeight > 500:
+                print("Hi")
+                self.playing = False
+                self.ballHeight = 200
+                self.playingHeight = 0
+                self.ballInteractable = True
+                self.ballFalling = False
+                self.verticalDirection = 1
+                    
         else:
             ...
 
@@ -356,11 +381,15 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if feed_rect.collidepoint(event.pos):
                 pass
+            
+            
         elif event.type == everyFourSeconds:
             curHunger = hunger_decrease(curHunger)
 
         elif event.type == everyFourthOfASec:
             frame_index = (frame_index + 1) % character.numOfCharacterImages
+        
+
         
         
     
